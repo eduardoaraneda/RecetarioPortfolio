@@ -1,0 +1,101 @@
+<header class="cabecera marco">
+  <span class="marca"><span class="marca-icono" aria-hidden="true">✳</span> Mesa de diario</span>
+  <a class="enlace-cabecera" href="#resultados">Explorar recetas <span aria-hidden="true">↘</span></a>
+</header>
+
+<main class="marco">
+  <section class="portada" aria-labelledby="titulo">
+    <div>
+      <p class="etiqueta portada-etiqueta">RECETARIO DE TODOS LOS DÍAS</p>
+      <h1 id="titulo">¿Qué cocinamos <em>hoy?</em></h1>
+      <p>Encuentra ideas para cocinar con lo que ya tienes en casa.</p>
+    </div>
+    <div class="ilustracion" aria-hidden="true">
+      <span class="plato">🥗</span>
+      <span class="adorno adorno-uno">✦</span>
+      <span class="adorno adorno-dos">✳</span>
+    </div>
+  </section>
+
+  <form class="buscador" (submit)="$event.preventDefault(); buscar(texto.value, categoria.value, tiempo.value)">
+    <label>Nombre o ingrediente
+      <input #texto type="search" maxlength="100" placeholder="Ej. tomate, limón o pasta">
+    </label>
+    <label>Categoría
+      <select #categoria>
+        <option value="">Todas</option>
+        <option>Frescas</option>
+        <option>Principales</option>
+        <option>Postres</option>
+      </select>
+    </label>
+    <label>Tiempo máximo
+      <select #tiempo>
+        <option value="">Cualquier tiempo</option>
+        <option value="15">15 minutos</option>
+        <option value="30">30 minutos</option>
+      </select>
+    </label>
+    <button class="principal" type="submit"><span class="lupa" aria-hidden="true"></span> Buscar recetas</button>
+    <button class="texto" type="reset" (click)="buscar('', '', '')">Limpiar</button>
+  </form>
+
+  <section class="resultados" aria-labelledby="resultados">
+    <div class="encabezado-resultados">
+      <h2 id="resultados">En el recetario</h2>
+      <p role="status">
+        @switch (estado()) {
+          @case ('cargando') { Buscando recetas… }
+          @case ('error') { La búsqueda no se pudo completar. }
+          @case ('listo') { {{ recetas().length }} {{ recetas().length === 1 ? 'receta' : 'recetas' }} }
+        }
+      </p>
+    </div>
+    @if (estado() === 'error') {
+      <p class="aviso">Comprueba que la API esté en ejecución e intenta buscar de nuevo.</p>
+    } @else if (estado() === 'listo') {
+      <div class="grilla">
+        @for (receta of recetas(); track receta.id) {
+          <article class="tarjeta">
+            <div class="arte" [attr.data-categoria]="receta.categoria">
+              <span class="icono-receta" aria-hidden="true">{{ receta.icono }}</span>
+              <span class="tiempo-receta">{{ receta.minutos }} min</span>
+            </div>
+            <div class="contenido">
+              <p class="etiqueta">{{ receta.categoria }}</p>
+              <h3>{{ receta.nombre }}</h3>
+              <p>{{ receta.descripcion }}</p>
+              <button class="texto" type="button" (click)="abrir(receta, detalle)"
+                [attr.aria-label]="'Ver receta de ' + receta.nombre">Ver receta →</button>
+            </div>
+          </article>
+        } @empty {
+          <p class="aviso">No encontramos recetas con esos filtros. Prueba con otro ingrediente o limpia la búsqueda.</p>
+        }
+      </div>
+    }
+  </section>
+
+  <dialog #detalle aria-labelledby="nombre-receta" (close)="seleccionada.set(null)">
+    <form method="dialog" class="cerrar"><button class="texto" autofocus>Cerrar ✕</button></form>
+    @if (seleccionada(); as receta) {
+      <p class="etiqueta">{{ receta.categoria }} · {{ receta.minutos }} min · {{ receta.porciones }} porciones</p>
+      <h2 id="nombre-receta">{{ receta.nombre }}</h2>
+      <p>{{ receta.descripcion }}</p>
+      <h3>Ingredientes</h3>
+      <ul>
+        @for (ingrediente of receta.ingredientes; track $index) {
+          <li>{{ ingrediente }}</li>
+        }
+      </ul>
+      <h3>Preparación</h3>
+      <ol>
+        @for (paso of receta.pasos; track $index) {
+          <li>{{ paso }}</li>
+        }
+      </ol>
+    }
+  </dialog>
+</main>
+
+<footer class="marco pie">Mesa de diario <span>Angular + ASP.NET Core</span></footer>
